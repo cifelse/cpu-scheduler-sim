@@ -1,12 +1,18 @@
 import { cli } from "./src/utils/cli.js";
-import fs from 'fs';
+import fs from "fs";
 
-const models = new Map(), table = [];
+const models = new Map(), table = [
+    { algorithm: 'First Come First Serve', abbreviation: 'FCFS' },
+    { algorithm: 'Shortest Job First', abbreviation: 'SJF' },
+    { algorithm: 'Shortest Remaining Time First', abbreviation: 'SRTF' },
+    { algorithm: 'Round Robin', abbreviation: 'RR' }
+];
 
 for (const file of fs.readdirSync('./src/models').filter(file => file.endsWith('.js'))) {
     const model = await import(`./src/models/${file}`);
-    table.push({ algorithm: model.name, abbreviation: file.split('.')[0].toUpperCase() });
     models.set(file.split('.')[0], model);
+
+    // table.push({ algorithm: model.name, abbreviation: file.split('.')[0].toUpperCase() });
 }
 
 /**
@@ -51,11 +57,15 @@ const reroute = async (choice) => {
     do {
         cli.table(table, true);
 
+        // Ask the User using the CLI
         const { answer, error } = await cli.ask(`Using the index, choose which algorithm to use: `, !res);
 
         if (error) return cli.error(error);
 
+        // Reroute the user to the chosen algorithm
         res = await reroute(answer);
     }
     while (!res);
+
+    cli.info(`\nThank you for using this program!`);
 })();

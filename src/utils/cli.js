@@ -1,6 +1,6 @@
-import { stdin as input, stdout as output } from 'node:process';
-import * as readline from 'node:readline/promises';
-import chalk from 'chalk';
+import { stdin as input, stdout as output } from "node:process";
+import * as readline from "node:readline/promises";
+import chalk from "chalk";
 
 /**
  * @module utils/cli
