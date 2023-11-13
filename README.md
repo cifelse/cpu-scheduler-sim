@@ -4,7 +4,7 @@ A simple Node.js Project that simulates of basic CPU scheduling algorithms that 
 ## Prerequisites
 The project requires the following to run:
 - [Node.js®](https://nodejs.org/en/download/)
-- npm (this is included when you download Node.js
+- npm (this is included when you download Node.js)
 
 ## Running Locally
 At the root of the folder (and assuming you have downloaded the prerequisites),
