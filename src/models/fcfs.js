@@ -1,5 +1,5 @@
 import { cli } from "../utils/cli.js";
-import { getInputFiles, read } from "../utils/io.js";
+import { display, getProcesses } from "../utils/io.js";
 
 // Name of the Algorithm
 export const name = `First Come First Serve`;
@@ -9,69 +9,42 @@ export const name = `First Come First Serve`;
  * @module models/fcfs
  * @async
  * @method
+ * @param {Number} Y - Number of Processes
  */
-export const execute = async () => {
-    let choice, valid = true, reset = false, exit = false;
+export const execute = async (Y) => {
+    cli.info(`You have chosen ${name}!`, { clear: true });
 
-    // Retrieve Inputs
-    const inputList = await getInputFiles();
+    // Get the processes from the user
+    const processes = await getProcesses(Y);
+    
+    // Sort by Arrival Time
+    processes.sort((a, b) => a.arrival - b.arrival);
 
-    // Choose Input File
-    do {
-        cli.info(`You have chosen ${name}!`, true);
+    let currentTime = 0, totalWaitTime = 0, results = [];
 
-        cli.table(inputList);
-        
-        const { answer, error } = await cli.ask(`Using the index, choose which input file to use: `, !valid);
+    for (const process of processes) {
+        // Calculate start time (max of current time and arrival time)
+        const startTime = Math.max(currentTime, process.arrival);
 
-        if (error) return cli.error(error);
+        // Calculate end time
+        const endTime = startTime + process.burst;
 
-        if (answer.toLowerCase() === 'exit') {
-            reset = false;
-            exit = true;
-        }
-        else {
-            choice = (answer === '0') ? 0 : (parseInt(answer) || answer);
+        // Calculate waiting time
+        const waitingTime = startTime - process.arrival;
 
-            valid = ((typeof choice) === 'number') && (choice >= 0) && (choice < (inputList.length));
+        // Track the process details
+        results.push(`${process.id} start time: ${startTime} end time: ${endTime} | Waiting time: ${waitingTime}`);
 
-            reset = (!valid);
-        }
-    }
-    while (reset && !exit);
+        // Update total waiting time and current time
+        totalWaitTime += waitingTime;
+        currentTime = endTime;
+    };
 
-    // If the user wants to exit
-    if (exit) return;
+    // Calculate and print the average waiting time
+    const averageWaitingTime = totalWaitTime / processes.length;
 
-    // Algorithm Proper
-    const contents = await read(`././inputs/${inputList[choice].files}`);
+    // Track the average waiting time
+    results.push(`Average waiting time: ${averageWaitingTime.toFixed(1)}`);
 
-    const results = contents;
-
-    // Ask User if they want to try another algorithm
-    do {
-        cli.info(results.toString(), true);
-
-        const { answer, error } = await cli.ask(`Try another algorithm? (Y/n) `, !valid);
-
-        if (error) return cli.error(error);
-
-        if (answer.toLowerCase() === 'exit') {
-            reset = choice = false;
-            exit = true;
-        }
-        else if (answer.toLowerCase() === 'y') {
-            choice = true;
-            reset = false;
-        }
-        else if (answer.toLowerCase() === 'n') {
-            reset = choice = false;
-        }
-        else {
-            reset = true;
-            valid = false;
-        }
-    } while (reset && !exit);
-
-    return choice;
+    return await display(results);
 }
