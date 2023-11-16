@@ -10,6 +10,7 @@ export const name = `First Come First Serve`;
  * @async
  * @method
  * @param {Number} Y - Number of Processes
+ * @returns {Boolean} - True if the user wants to try again
  */
 export const execute = async (Y) => {
     cli.info(`You have chosen ${name}!`, { clear: true });
