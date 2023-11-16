@@ -10,11 +10,16 @@ export const cli = {
      * Prints a success message to the console
      * @method
      * @param {String} message - The message to print
-     * @param {Bool} clear - Clear the console before printing the message
+     * @param {Object} options - Options in printing the info
      */
-    info: (message, clear) => {
-        if (clear) console.clear();
-        console.log(chalk.cyanBright(message));
+    info: (message, options) => {
+        if (options) {
+            const { color, clear } = options;
+            if (clear) console.clear();
+            console.log(chalk[color ?? 'cyanBright'](message));
+        }
+        else
+            console.log(chalk.cyanBright(message));
     },
 
     /**
@@ -52,7 +57,7 @@ export const cli = {
     ask: async (question, invalid) => {
         const rl = readline.createInterface({ input, output });
         try {
-            if (invalid) console.error(chalk.red(`\nInvalid Choice. Please try again.`));
+            if (invalid) console.error(chalk.red(`Invalid Choice. Please try again.`));
             return { answer: await rl.question(chalk.yellow(question)) };
         }
         catch (error) {
