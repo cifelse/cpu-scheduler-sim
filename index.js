@@ -22,10 +22,10 @@ for (const file of fs.readdirSync('./src/models').filter(file => file.endsWith('
  * @param {String} response - The choice of the user
  * @return {Boolean} - If the user's response is valid
  */
-const isValid = async (response) => {
-    const arr =  response.split(' ');
+const isValid = (response) => {
+    const arr = response.split(' ');
 
-    if (arr.length < 3) return;
+    if (arr.length != 3) return false;
     
     // Parse the values to integers
     const [X, Y, Z] = arr.map(v => { return parseInt(v) });
@@ -62,14 +62,19 @@ const isValid = async (response) => {
         // If there is an error, print it to the console
         if (error) return cli.error(error);
         
+        // Exit
         if (answer.toLowerCase() === 'exit') reset = false;
             
         else {
             // Check if the user's response is valid
-            valid = await isValid(answer);
+            valid = isValid(answer);
 
-            // Reroute the user to the chosen algorithm
-            reset = (!valid) ? true : await models.get(table[parseInt(answer)].abbreviation.toLowerCase()).execute(answer);
+            // If answer is valid, proceed to execute chosen CPU scheduler
+            reset = (!valid) ? true : await (async () => {
+                const [X, Y, Z] = answer.split(' ').map(v => { return parseInt(v) });
+                
+                return await models.get(table[X].abbreviation.toLowerCase()).execute(Y, X == 3 ? Z : 1);
+            })();
         }
     }
     while (reset);
