@@ -1,3 +1,4 @@
+import { cli } from "./cli.js";
 import readline from "readline";
 import fs from "fs";
 
@@ -5,17 +6,16 @@ import fs from "fs";
  * Gets the inputs from the inputs folder
  * @async
  * @method
- * @returns {Map} - The inputs
+ * @returns {Array} - The inputs
  */
-export const getInputs = async () =>{
-    const inputs = new Map();
+export const getInputFiles = async () =>{
+    const inputList = [];
 
     for (const file of fs.readdirSync('././inputs').filter(file => file.endsWith('.txt'))) {
-        const input = await read(`././inputs/${file}`);
-        inputs.set(file.split('.')[0], input);
+        inputList.push({ files: file });
     }
 
-    return inputs;
+    return inputList;
 }
 
 /**
@@ -38,4 +38,15 @@ export const read = async (filePath) => {
     }
 
     return contents;
+}
+
+/**
+ * Writes the data to the file
+ * @async
+ * @method
+ * @param {String} filePath - The path to the file to process
+ * @param {String} data - The data to write
+ */
+export const write = async (filePath, data) => {
+
 }

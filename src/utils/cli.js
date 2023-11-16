@@ -22,10 +22,12 @@ export const cli = {
      * @method
      * @param {String} message - The message to print
      * @param {Bool} clear - Clear the console before printing the message
+     * @returns {Number} - Returns -1, a value that can be used to exit the loops
      */
     error: (message, clear) => {
         if (clear) console.clear();
         console.error(chalk.red(message));
+        return -1;
     },
 
     /**

@@ -16,56 +16,48 @@ for (const file of fs.readdirSync('./src/models').filter(file => file.endsWith('
 }
 
 /**
- * Routes the user to the chosen algorithm
- * @param {String} choice - The choice of the user
+ * Checks the validity of the user's response
+ * @async
+ * @method
+ * @param {String} response - The choice of the user
+ * @return {Boolean} - If the user's response is valid
  */
-const reroute = async (choice) => {
-    switch (choice.toUpperCase()) {
-        case '0':
-        case 'FCFS':
-            cli.info(`You have chosen ${table[0].algorithm}!`, true);
-            await models.get('fcfs').execute();
-            break;
-        case '1':
-        case 'SJF':
-            cli.info(`You have chosen ${table[1].algorithm}!`, true);
-            await models.get('sjf').execute();
-            break;
-        case '2':
-        case 'SRTF': 
-            cli.info(`You have chosen ${table[2].algorithm}!`, true);
-            await models.get('srtf').execute();
-            break;
-        case '3':
-        case 'RR':
-            cli.info(`You have chosen ${table[3].algorithm}!`, true);
-            await models.get('rr').execute();
-            break;
-        default: 
-            return false;
-    }
+const isValid = async (response) => {
+    response = (response === '0') ? 0 : (parseInt(response) || response);
 
-    return true;
+    // If the choice is not a number or is not within the range of the table
+    return ((typeof response) === 'number') && (response >= 0) && (response < (table.length));
 }
 
 /**
  * Main Function
  */
 (async () => {
-    let res = true;
+    let valid = true, reset = false;
 
     do {
-        cli.table(table, true);
+        cli.info(`Welcome to the CPU Scheduling Simulator!`, true);
+
+        // Display the table of algorithms
+        cli.table(table);
 
         // Ask the User using the CLI
-        const { answer, error } = await cli.ask(`Using the index, choose which algorithm to use: `, !res);
+        const { answer, error } = await cli.ask(`Using the index, choose which algorithm to use: `, !valid);
 
+        // If there is an error, print it to the console
         if (error) return cli.error(error);
+        
+        if (answer.toLowerCase() === 'exit') reset = false;
+            
+        else {
+            // Check if the user's response is valid
+            valid = await isValid(answer);
 
-        // Reroute the user to the chosen algorithm
-        res = await reroute(answer);
+            // Reroute the user to the chosen algorithm
+            reset = (!valid) ? true : await models.get(table[parseInt(answer)].abbreviation.toLowerCase()).execute();
+        }
     }
-    while (!res);
+    while (reset);
 
     cli.info(`\nThank you for using this program!`);
 })();
