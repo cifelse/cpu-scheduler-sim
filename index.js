@@ -23,10 +23,17 @@ for (const file of fs.readdirSync('./src/models').filter(file => file.endsWith('
  * @return {Boolean} - If the user's response is valid
  */
 const isValid = async (response) => {
-    response = (response === '0') ? 0 : (parseInt(response) || response);
+    const arr =  response.split(' ');
 
-    // If the choice is not a number or is not within the range of the table
-    return ((typeof response) === 'number') && (response >= 0) && (response < (table.length));
+    if (arr.length < 3) return;
+    
+    // Parse the values to integers
+    const [X, Y, Z] = arr.map(v => { return parseInt(v) });
+
+    // Check if the response follows the specs
+    return (((typeof X) === 'number') && (X >= 0) && (X < (table.length)) &&
+        ((typeof Y) === 'number') && (Y >= 3) && (Y <= 100) &&
+        ((typeof Z) === 'number') && (Z >= 1) && (Z <= 100));
 }
 
 /**
@@ -36,13 +43,21 @@ const isValid = async (response) => {
     let valid = true, reset = false;
 
     do {
-        cli.info(`Welcome to the CPU Scheduling Simulator!`, true);
+        cli.info(`Welcome to the CPU Scheduling Simulator!`, { clear: true });
 
         // Display the table of algorithms
         cli.table(table);
 
+        cli.info(`Enter 3 integers separated by spaces to simulate a process: (X Y Z)\n`);
+        
+        cli.info(`X denotes the CPU scheduling algorithm. See table above.`, { color: `white` });
+
+        cli.info(`Y denotes the number of processes to simulate, where 3 ≤ Y ≤ 100`);
+
+        cli.info(`Z denotes the time quantum for the Round Robin algorithm, where 1 ≤ Z ≤ 100\n`, { color: `green` });
+
         // Ask the User using the CLI
-        const { answer, error } = await cli.ask(`Using the index, choose which algorithm to use: `, !valid);
+        const { answer, error } = await cli.ask(`Input: `, !valid);
 
         // If there is an error, print it to the console
         if (error) return cli.error(error);
@@ -54,7 +69,7 @@ const isValid = async (response) => {
             valid = await isValid(answer);
 
             // Reroute the user to the chosen algorithm
-            reset = (!valid) ? true : await models.get(table[parseInt(answer)].abbreviation.toLowerCase()).execute();
+            reset = (!valid) ? true : await models.get(table[parseInt(answer)].abbreviation.toLowerCase()).execute(answer);
         }
     }
     while (reset);
