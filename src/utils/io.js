@@ -40,13 +40,61 @@ export const read = async (filePath) => {
     return contents;
 }
 
+
 /**
- * Writes the data to the file
+ * Gets the processes from the user
  * @async
  * @method
- * @param {String} filePath - The path to the file to process
- * @param {String} data - The data to write
+ * @param {Number} limit - Number of Processes
+ * @returns {Array} - Array of Processes
  */
-export const write = async (filePath, data) => {
+export const getProcesses = async (limit) => {
+    const processes = [];
 
+    // Get the processes from the user
+    for (let i = 0; i < limit; i++) {
+        const { answer, error } = await cli.ask(`Enter Process ${i + 1}: `);
+
+        if (error) return cli.error(error);
+
+        const [id, arrival, burst] = answer.split(' ').map(v => { return parseInt(v) });
+
+        // Check if the values are valid
+        if (isNaN(id) || (id <= 0)) i--;
+
+        else processes.push({ id, arrival, burst });
+    }
+
+    return processes;
+}
+
+/**
+ * Display Results and Ask the user if they want to try another algorithm
+ * @async
+ * @method
+ * @param {Array<String>} results - Results of the test
+ * @returns {Boolean} - If the user wants to reset
+ */
+export const display = async (results) => {
+    let reset = false;
+
+    do {
+        cli.info(`Results of the Process:`, { clear: 'true', color: 'yellow' });
+
+        cli.info(`${results.join('\n')}\n`);
+
+        const { answer, error } = await cli.ask(`Try another algorithm? (Y/n) `, reset);
+
+        if (error) return cli.error(error);
+
+        if (answer.toLowerCase() === 'exit' || answer.toLowerCase() === 'n') {
+            return false;
+        }
+        else if (answer.toLowerCase() === 'y') {
+            return true;
+        }
+        else {
+            reset = true;
+        }
+    } while (reset);
 }
