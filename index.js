@@ -8,6 +8,7 @@ const models = new Map(), table = [
     { algorithm: 'Round Robin', abbreviation: 'RR' }
 ];
 
+// Import all the models
 for (const file of fs.readdirSync('./src/models').filter(file => file.endsWith('.js'))) {
     const model = await import(`./src/models/${file}`);
     models.set(file.split('.')[0], model);
