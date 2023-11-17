@@ -58,7 +58,7 @@ const isValid = (response) => {
         cli.info(`Z denotes the time quantum for the Round Robin algorithm, where 1 ≤ Z ≤ 100\n`, { color: `green` });
 
         // Ask the User using the CLI
-        const { answer, error } = await cli.ask(`Input: `, !valid);
+        const { answer, error } = await cli.ask(`Input (X Y Z): `, !valid);
 
         // If there is an error, print it to the console
         if (error) return cli.error(error);
