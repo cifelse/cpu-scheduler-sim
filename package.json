@@ -5,7 +5,8 @@
   "description": "A simple Node.js Project that simulates of basic CPU scheduling algorithms that conforms to the input-output format using .txt files. This Machine Project is submitted to Sir Jonathan Mantua as part of the deliverables for the partial completion for the course CSOPESY at De La Salle University.",
   "main": "index.js",
   "scripts": {
-    "test": "vitest"
+    "test": "vitest",
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",

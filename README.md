@@ -9,9 +9,8 @@ The project requires the following to run:
 ## Running Locally
 At the root of the folder (and assuming you have downloaded the prerequisites),
 1. Run `npm i` in your terminal.
-2. Place all the input files in the `/inputs` folder.
-   - This assumes different inputs are inside multiple `.txt` files. 
-4. Run `npm start` in your terminal.
+2. Place your input file at the root of the folder. Default is `input.txt`.
+3. Run `npm start` in your terminal.
 
 ## Algorithms
 The basic CPU scheduling algorithms showcased are:
@@ -19,3 +18,7 @@ The basic CPU scheduling algorithms showcased are:
 2. Shortest-Job First (SJF)
 3. Shortest-Remaining-Time-First (SRTF)
 4. Round-Robin (RR)  
+
+## NPM Packages Used
+1. [chalk](https://www.npmjs.com/package/chalk) - for colored terminal output
+2. [vitest](https://www.npmjs.com/package/vitest) - for testing the output of the program automatically
