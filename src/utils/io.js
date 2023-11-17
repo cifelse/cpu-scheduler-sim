@@ -36,7 +36,7 @@ export const readInput = async (filePath) => {
 
     for await (const line of reader) {
         const [A, B, C] = line.split(' ');
-        if (A != 0) contents.push({ id: parseInt(A), arrival: parseInt(B), burst: parseInt(C) });
+        if (A != 0 && !A.includes('//')) contents.push({ id: parseInt(A), arrival: parseInt(B), burst: parseInt(C) });
     }
 
     return contents;
