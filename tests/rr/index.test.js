@@ -26,8 +26,6 @@ for (const file of inputFiles) {
         const q = quantums.get(file);
         
         const actual = await rr(processes, q);
-
-        console.log(actual);
         
         expect(expected).toEqual(actual);
     });
