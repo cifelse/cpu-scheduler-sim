@@ -22,7 +22,7 @@ for (const file of inputFiles) {
 
         const expected = await readOutput(DIR + outputFile);
         
-        const actual = await srtf(processes, q);
+        const actual = await srtf(processes);
         
         expect(expected).toEqual(actual);
     });
