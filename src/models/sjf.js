@@ -1,5 +1,5 @@
 import { cli } from "../utils/cli.js";
-import { getInputFiles, read } from "../utils/io.js";
+import { display, getProcesses } from "../utils/io.js";
 
 // Name of the Algorithm
 export const name = `Shortest Job First`;
@@ -9,69 +9,42 @@ export const name = `Shortest Job First`;
  * @module models/sjf
  * @async
  * @method
+ * @param {Number} Y - Number of Processes
+ * @returns {Boolean} - True if the user wants to try again
  */
-export const execute = async () => {
-    let choice, valid = true, reset = false, exit = false;
+export const execute = async (Y) => {
+    cli.info(`You have chosen ${name}!`, { clear: true });
 
-    // Retrieve Inputs
-    const inputList = await getInputFiles();
+    // Get the processes from the user
+    const processes = await getProcesses(Y);
+    
+    const results = await sjf(processes);
+    
+    return await display(results);
+}
 
-    // Choose Input File
-    do {
-        cli.info(`You have chosen ${name}!`, true);
+/**
+ * Shortest Job First Algorithm
+ * @async
+ * @method
+ * @param {Array<Object>} processes - Array of Processes
+ * @returns {Array<Object>} - Array of Results
+ */
+export const sjf = async (processes) => {
+    // Sort by Arrival Time
+    processes.sort((a, b) => a.arrival - b.arrival);
 
-        cli.table(inputList);
-        
-        const { answer, error } = await cli.ask(`Using the index, choose which input file to use: `, !valid);
-
-        if (error) return cli.error(error);
-
-        if (answer.toLowerCase() === 'exit') {
-            reset = false;
-            exit = true;
-        }
-        else {
-            choice = (answer === '0') ? 0 : (parseInt(answer) || answer);
-
-            valid = ((typeof choice) === 'number') && (choice >= 0) && (choice < (inputList.length));
-
-            reset = (!valid);
-        }
-    }
-    while (reset && !exit);
-
-    // If the user wants to exit
-    if (exit) return;
+    let currentTime = 0, totalWaitTime = 0, results = [];
 
     // Algorithm Proper
-    const contents = await read(`././inputs/${inputList[choice].files}`);
-
-    const results = contents;
-
-    // Ask User if they want to try another algorithm
-    do {
-        cli.info(results.toString(), true);
-
-        const { answer, error } = await cli.ask(`Try another algorithm? (Y/n) `, !valid);
-
-        if (error) return cli.error(error);
-
-        if (answer.toLowerCase() === 'exit') {
-            reset = choice = false;
-            exit = true;
-        }
-        else if (answer.toLowerCase() === 'y') {
-            choice = true;
-            reset = false;
-        }
-        else if (answer.toLowerCase() === 'n') {
-            reset = choice = false;
-        }
-        else {
-            reset = true;
-            valid = false;
-        }
-    } while (reset && !exit);
     
-    return choice;
+
+
+    // Sort by id
+    results = results.sort((a, b) => a.id - b.id).map(r => { return `${r.id} ${r.details}` });
+
+    // Track the average waiting time
+    results.push(`Average waiting time: ${averageWaitingTime.toFixed(1)}`);
+
+    return results;
 }

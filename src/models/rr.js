@@ -1,5 +1,5 @@
 import { cli } from "../utils/cli.js";
-import { getInputFiles, read } from "../utils/io.js";
+import { display, getProcesses } from "../utils/io.js";
 
 // Name of the Algorithm
 export const name = `Round Robin`;
@@ -9,69 +9,84 @@ export const name = `Round Robin`;
  * @module models/rr
  * @async
  * @method
+ * @param {Number} Y - Number of Processes
+ * @param {Number} Z - Time Slice Value
+ * @returns {Boolean} - True if the user wants to try again
  */
-export const execute = async () => {
-    let choice, valid = true, reset = false, exit = false;
+export const execute = async (Y, Z) => {
+    cli.info(`You have chosen ${name}! [With Quantum = ${Z}]`, { clear: true });
 
-    // Retrieve Inputs
-    const inputList = await getInputFiles();
+    // Get the processes from the user
+    const processes = await getProcesses(Y);
+    
+    const results = await rr(processes, Z);
 
-    // Choose Input File
-    do {
-        cli.info(`You have chosen ${name}!`, true);
+    return await display(results);
+}
 
-        cli.table(inputList);
-        
-        const { answer, error } = await cli.ask(`Using the index, choose which input file to use: `, !valid);
+/**
+ * Round Robin Algorithm
+ * @async
+ * @method
+ * @param {Array<Object>} processes - Array of Processes
+ * @param {Number} quantum - Time Slice Value
+ * @returns {Array<Object>} - Array of Results
+ */
+export const rr = async (processes, quantum) => {
+    // Use a queue to track the processes
+    let queue = processes.sort((a, b) => a.arrival - b.arrival).map(p => ({ ...p, remaining: p.burst, history: [] }));
 
-        if (error) return cli.error(error);
-
-        if (answer.toLowerCase() === 'exit') {
-            reset = false;
-            exit = true;
-        }
-        else {
-            choice = (answer === '0') ? 0 : (parseInt(answer) || answer);
-
-            valid = ((typeof choice) === 'number') && (choice >= 0) && (choice < (inputList.length));
-
-            reset = (!valid);
-        }
-    }
-    while (reset && !exit);
-
-    // If the user wants to exit
-    if (exit) return;
+    let currentTime = 0, totalWaitTime = 0, results = [];
 
     // Algorithm Proper
-    const contents = await read(`././inputs/${inputList[choice].files}`);
+    while (queue.length > 0) {
+        let process = queue.shift();
 
-    const results = contents;
-
-    // Ask User if they want to try another algorithm
-    do {
-        cli.info(results.toString(), true);
-
-        const { answer, error } = await cli.ask(`Try another algorithm? (Y/n) `, !valid);
-
-        if (error) return cli.error(error);
-
-        if (answer.toLowerCase() === 'exit') {
-            reset = choice = false;
-            exit = true;
+        // Check if the process has arrived
+        if (process.arrival > currentTime) {
+            currentTime = process.arrival;
         }
-        else if (answer.toLowerCase() === 'y') {
-            choice = true;
-            reset = false;
-        }
-        else if (answer.toLowerCase() === 'n') {
-            reset = choice = false;
-        }
-        else {
-            reset = true;
-            valid = false;
-        }
-    } while (reset && !exit);
 
-    return choice;
+        // Calculate the time slice for the current process
+        const diff = Math.min(process.remaining, quantum);
+
+        // Track the process history
+        process.history.push({ start: currentTime, end: currentTime + diff });
+
+        // Update current time and remaining burst time
+        currentTime += diff;
+        process.remaining -= diff;
+
+        // Check if the process is not finished and requeue it
+        if (process.remaining > 0) {
+            queue.push(process);
+            continue;
+        }
+
+        // Calculate total waiting time
+        let waitingTime = process.history.reduce((accumulator, history, index) => {
+            if (index === 0) return accumulator + history.start - process.arrival;
+            return accumulator + history.start - process.history[index - 1].end;
+        }, 0);
+
+        // Update total waiting time
+        totalWaitTime += waitingTime;
+
+        // Print the process details
+        let timesString = process.history.map(t => `start time: ${t.start} end time: ${t.end}`).join(" | ");
+        
+        // Track final process details
+        results.push({ id: process.id, details: `${timesString} | Waiting time: ${waitingTime}` });
+    }
+
+    // Calculate average waiting time
+    const averageWaitingTime = totalWaitTime / processes.length;
+    
+    // Sort by id
+    results = results.sort((a, b) => a.id - b.id).map(r => { return `${r.id} ${r.details}` });
+    
+    // Track the average waiting time
+    results.push(`Average waiting time: ${averageWaitingTime.toFixed(1)}`);
+
+    return results;
 }
