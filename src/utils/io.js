@@ -72,8 +72,20 @@ export const readOutput = async (filePath) => {
  * @param {Number} limit - Number of Processes
  * @returns {Array} - Array of Processes
  */
-export const getProcesses = async (limit) => {
+export const getProcesses = async (limit, complete) => {
     let valid = true, processes = [];
+
+    if (complete) {
+        const { answer, error } = await cli.ask(`Enter [All] Processes: `);
+
+        if (error) return cli.error(error);
+
+        processes = answer.split('\n').map(v => { 
+            return v.split(' ').map(n => { return parseInt(n) });
+        });
+
+        return processes;
+    }
 
     // Get the processes from the user
     for (let i = 0; i < limit; i++) {

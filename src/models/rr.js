@@ -17,7 +17,7 @@ export const execute = async (Y, Z) => {
     cli.info(`You have chosen ${name}! [With Quantum = ${Z}]`, { clear: true });
 
     // Get the processes from the user
-    const processes = await getProcesses(Y);
+    const processes = await getProcesses(Y, true);
     
     const results = await rr(processes, Z);
 
@@ -34,7 +34,7 @@ export const execute = async (Y, Z) => {
  */
 export const rr = async (processes, quantum) => {
     // Use a queue to track the processes
-    let queue = processes.sort((a, b) => a.arrival - b.arrival).map(p => ({ ...p, remaining: p.burst, history: [] }));
+    let queue = processes.sort((a, b) => a.arrival - b.arrival).map(p => ({ ...p, remaining: p.burst, history: [], last: 0 }));
 
     let currentTime = 0, totalWaitTime = 0, results = [];
 

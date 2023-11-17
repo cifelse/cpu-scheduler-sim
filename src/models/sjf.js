@@ -16,7 +16,7 @@ export const execute = async (Y) => {
     cli.info(`You have chosen ${name}!`, { clear: true });
 
     // Get the processes from the user
-    const processes = await getProcesses(Y);
+    const processes = await getProcesses(Y, true);
     
     const results = await sjf(processes);
     
