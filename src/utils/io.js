@@ -70,21 +70,18 @@ export const readOutput = async (filePath) => {
  * @async
  * @method
  * @param {Number} limit - Number of Processes
+ * @param {Bool} complete - If the user wants to read from a file
  * @returns {Array} - Array of Processes
  */
 export const getProcesses = async (limit, complete) => {
     let valid = true, processes = [];
 
     if (complete) {
-        const { answer, error } = await cli.ask(`Enter [All] Processes: `);
+        const { answer, error } = await cli.ask(`Enter Input Filename [input.txt]: `);
 
         if (error) return cli.error(error);
 
-        processes = answer.split('\n').map(v => { 
-            return v.split(' ').map(n => { return parseInt(n) });
-        });
-
-        return processes;
+        return await readInput('./' + (answer.lenght > 0 ? answer : 'input.txt'));
     }
 
     // Get the processes from the user
@@ -120,7 +117,7 @@ export const display = async (results) => {
     let reset = false;
 
     do {
-        cli.info(`Results of the Process:`, { clear: 'true', color: 'yellow' });
+        cli.info(`Results of the Process:`, { clear: true, color: 'yellow' });
 
         cli.info(`${results.join('\n')}\n`);
 
