@@ -1,5 +1,5 @@
 import { cli } from "../utils/cli.js";
-import { display, getProcesses } from "../utils/io.js";
+import { display, readInput } from "../utils/io.js";
 
 // Name of the Algorithm
 export const name = `First Come First Serve`;
@@ -9,14 +9,16 @@ export const name = `First Come First Serve`;
  * @module models/fcfs
  * @async
  * @method
+ * @param {String} filePath - Path of the input file
  * @param {Number} Y - Number of Processes
+ * @param {Number} Z - Time Quantum (1 if not RR)
  * @returns {Boolean} - True if the user wants to try again
  */
-export const execute = async (Y) => {
-    cli.info(`You have chosen ${name}!`, { clear: true });
+export const execute = async (filePath, Y, Z) => {
+    cli.info(`You have chosen ${name}! ${Y} processes. Q = ${Z}`, { clear: true });
 
     // Get the processes from the user
-    const processes = await getProcesses(Y, true);
+    const processes = await readInput(filePath, false);
     
     const results = await fcfs(processes);
 
