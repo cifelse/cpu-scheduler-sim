@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import { getTestFiles, readInput, readOutput } from "../../src/utils/io.js";
 import { srtf } from "../../src/models/srtf.js";
 
-const DIR = './tests/sjf/';
+const DIR = './tests/srtf/';
 
 const testFiles = await getTestFiles(DIR);
 const inputFiles = testFiles.filter(file => file.startsWith('input'));

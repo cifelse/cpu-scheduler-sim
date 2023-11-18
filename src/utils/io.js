@@ -121,7 +121,7 @@ export const display = async (results) => {
     let reset = false;
 
     do {
-        cli.info(`Results of the Process:`, { clear: true, color: 'yellow' });
+        cli.info(`\nResults of the Process:`, { clear: false, color: 'yellow' });
 
         cli.info(`${results.join('\n')}\n`);
 

@@ -1,4 +1,5 @@
 import { cli } from "./src/utils/cli.js";
+import { readInput } from "./src/utils/io.js";
 import fs from "fs";
 
 const models = new Map(), table = [
@@ -31,6 +32,8 @@ const isValid = (response) => {
     // Parse the values to integers
     const [X, Y, Z] = arr.map(v => { return parseInt(v) });
 
+    return true;
+    
     // Check if the response follows the specs
     return (((typeof X) === 'number') && (X >= 0) && (X < (table.length)) &&
         ((typeof Y) === 'number') && (Y >= 3) && (Y <= 100) &&
@@ -44,7 +47,7 @@ const isValid = (response) => {
     let valid = true, reset = false;
 
     do {
-        cli.info(`Welcome to the CPU Scheduling Simulator!`, { clear: true });
+        cli.info(`Welcome to the CPU Scheduling Simulator!`, { clear: false });
 
         // Display the table of algorithms
         cli.table(table);
@@ -57,24 +60,27 @@ const isValid = (response) => {
 
         cli.info(`Z denotes the time quantum for the Round Robin algorithm, where 1 ≤ Z ≤ 100\n`, { color: `green` });
 
-        // Ask the User using the CLI
-        const { answer, error } = await cli.ask(`Input (X Y Z): `, !valid);
+        const { answer, error } = await cli.ask(`Enter Input Filename [input.txt]: `);
 
-        // If there is an error, print it to the console
         if (error) return cli.error(error);
-        
+
         // Exit
         if (answer.toLowerCase() === 'exit') reset = false;
-            
+
         else {
+             // Get first line of the txt file only (the config) in txt file
+            const filePath = '././' + (answer.lenght > 0 ? answer : 'input.txt');
+
+            const config = await readInput(filePath, true);
+
             // Check if the user's response is valid
-            valid = isValid(answer);
+            valid = isValid(config);
 
             // If answer is valid, proceed to execute chosen CPU scheduler
             reset = (!valid) ? true : await (async () => {
-                const [X, Y, Z] = answer.split(' ').map(v => { return parseInt(v) });
-                
-                return await models.get(table[X].abbreviation.toLowerCase()).execute(Y, X == 3 ? Z : 1);
+                const [X, Y, Z] = config.split(' ').map(v => { return parseInt(v) });
+
+                return await models.get(table[X].abbreviation.toLowerCase()).execute(filePath, Y, X == 3 ? Z : 1);
             })();
         }
     }
