@@ -90,7 +90,7 @@ export const rr = async (processes, quantum) => {
             process.startTimes.push(startTime);
             process.endTimes.push(currentTime);
             queue.push(process);
-            history.get(process.id).push(`start time: ${startTime} end time: ${currentTime}`);
+            history.get(process.id).push(`start time: ${startTime} end time: ${currentTime} |`);
         }
         else {
             process.startTimes.push(startTime);
