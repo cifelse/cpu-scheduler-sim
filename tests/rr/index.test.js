@@ -1,7 +1,6 @@
 import { expect, test } from "vitest";
 import { getTestFiles, readInput, readOutput } from "../../src/utils/io.js";
 import { rr } from "../../src/models/rr.js";
-import { quantums } from "./quantum.config.js";
 
 const DIR = './tests/rr/';
 
@@ -15,18 +14,20 @@ test('Input Files have equivalent Output Files', async () => {
 });
 
 // Test each input file
-// for (const file of inputFiles) {
-//     test(`Input File ${file} has exact results as equivalent Output File`, async () => {
-//         const processes = await readInput(DIR + file);
+for (const file of inputFiles) {
+    test(`Input File ${file} has exact results as equivalent Output File`, async () => {
+        const config = await readInput(DIR + file, true);
         
-//         const outputFile = file.replace('input', 'output');
+        const [X, Y, Z] = await config.split(' ');
 
-//         const expected = await readOutput(DIR + outputFile);
+        const processes = await readInput(DIR + file, false);
+        
+        const outputFile = file.replace('input', 'output');
 
-//         const q = quantums.get(file);
+        const expected = await readOutput(DIR + outputFile);
+
+        const actual = await rr(processes, parseInt(Z));
         
-//         const actual = await rr(processes, q);
-        
-//         expect(expected).toEqual(actual);
-//     });
-// }
+        expect(expected).toEqual(actual);
+    });
+}
