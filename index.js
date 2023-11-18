@@ -27,27 +27,47 @@ for (const file of fs.readdirSync('./src/models').filter(file => file.endsWith('
 const isValid = (response) => {
     const arr = response.split(' ');
 
-    if (arr.length != 3) return false;
+    if (arr.length != 3) return {
+        valid: false,
+        error: 'Invalid number of arguments.'
+    };
     
     // Parse the values to integers
     const [X, Y, Z] = arr.map(v => { return parseInt(v) });
 
-    return true;
-    
+    console.log(X, Y, Z);
+
     // Check if the response follows the specs
-    return (((typeof X) === 'number') && (X >= 0) && (X < (table.length)) &&
-        ((typeof Y) === 'number') && (Y >= 3) && (Y <= 100) &&
-        ((typeof Z) === 'number') && (Z >= 1) && (Z <= 100));
+    if (!((typeof X) === 'number') && (X >= 0) && (X < (table.length))) return {
+        valid: false,
+        error: 'X must be an integer between 0 and 3.'
+    };
+
+    if (!((typeof Y) === 'number') && (Y >= 3) && (Y <= 100)) return {
+        valid: false,
+        error: 'Y must be an integer between 3 and 100.'
+    };
+        
+    if (Z == 3 && !((typeof Z) === 'number') && (Z >= 1) && (Z <= 100)) return {
+        valid: false,
+        error: 'Z must be an integer between 1 and 100.'
+    }
+
+    return {
+        valid: true,
+        error: ''
+    };
 }
+
 
 /**
  * Main Function
  */
 (async () => {
-    let valid = true, reset = false;
+    let valid = true, reset = false, errorMessage = '';
 
     do {
-        cli.info(`Welcome to the CPU Scheduling Simulator!`, { clear: false });
+        cli.info(`Welcome to the CPU Scheduling Simulator!`, { clear: true });
 
         // Display the table of algorithms
         cli.table(table);
@@ -60,6 +80,8 @@ const isValid = (response) => {
 
         cli.info(`Z denotes the time quantum for the Round Robin algorithm, where 1 ≤ Z ≤ 100\n`, { color: `green` });
 
+        if (errorMessage.length > 0) cli.info(errorMessage, { color: `red` });
+
         const { answer, error } = await cli.ask(`Enter Input Filename [input.txt]: `);
 
         if (error) return cli.error(error);
@@ -69,16 +91,26 @@ const isValid = (response) => {
 
         else {
              // Get first line of the txt file only (the config) in txt file
-            const filePath = '././' + (answer.lenght > 0 ? answer : 'input.txt');
+            const filePath = '././' + (answer.length > 0 ? answer : 'input.txt');
 
-            const config = await readInput(filePath, true);
+            const { contents: config, error: err } = await readInput(filePath, true);
+            
+            if (err) {
+                errorMessage = err;
+                reset = true;
+                continue;
+            }
 
             // Check if the user's response is valid
-            valid = isValid(config);
+            const { valid, error } = isValid(config);
+
+            errorMessage = error;
 
             // If answer is valid, proceed to execute chosen CPU scheduler
             reset = (!valid) ? true : await (async () => {
                 const [X, Y, Z] = config.split(' ').map(v => { return parseInt(v) });
+
+                errorMessage = '';
 
                 return await models.get(table[X].abbreviation.toLowerCase()).execute(filePath, Y, X == 3 ? Z : 1);
             })();
