@@ -28,29 +28,36 @@ export const getTestFiles = async (dir) =>{
  * @return {Array<Object>} - The contents of the file
  */
 export const readInput = async (filePath, firstLine) => {
-    const contents = [], stream = fs.createReadStream(filePath);
+    try {
+        const contents = [], stream = fs.createReadStream(filePath);
 
-    let i = 0;
+        let i = 0;
 
-    const reader = readline.createInterface({
-        input: stream,
-        crlfDelay: Infinity
-    });
+        const reader = readline.createInterface({
+            input: stream,
+            crlfDelay: Infinity
+        });
 
-    for await (const line of reader) {
-        const [A, B, C] = line.split(' ');
+        for await (const line of reader) {
+            const [A, B, C] = line.split(' ');
 
-        if (firstLine) {
-            return `${A} ${B} ${C}`;
+            if (firstLine) {
+                return {
+                    contents: `${A} ${B} ${C}`
+                };
+            }
+            else {
+                if (i != 0) contents.push({ id: parseInt(A), arrival: parseInt(B), burst: parseInt(C) });
+            }
+
+            i++;
         }
-        else {
-            if (i != 0) contents.push({ id: parseInt(A), arrival: parseInt(B), burst: parseInt(C) });
-        }
 
-        i++;
+        return { contents };
     }
-
-    return contents;
+    catch (e) {
+        return { error: `Invalid Filename or File does not exist.` }
+    }
 }
 
 /**
