@@ -16,7 +16,7 @@ test('Input Files have equivalent Output Files', async () => {
 // Test each input file
 for (const file of inputFiles) {
     test(`Input File ${file} has exact results as equivalent Output File`, async () => {
-        const processes = await readInput(DIR + file, false);
+        const { contents: processes } = await readInput(DIR + file, false);
         
         const outputFile = file.replace('input', 'output');
 
