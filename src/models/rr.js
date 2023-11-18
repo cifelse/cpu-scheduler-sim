@@ -1,5 +1,5 @@
 import { cli } from "../utils/cli.js";
-import { display, getProcesses } from "../utils/io.js";
+import { display, readInput } from "../utils/io.js";
 
 // Name of the Algorithm
 export const name = `Round Robin`;
@@ -9,16 +9,17 @@ export const name = `Round Robin`;
  * @module models/rr
  * @async
  * @method
+ * @param {String} filePath - Path of the input file
  * @param {Number} Y - Number of Processes
- * @param {Number} Z - Time Slice Value
+ * @param {Number} Z - Time Quantum (1 if not RR)
  * @returns {Boolean} - True if the user wants to try again
  */
-export const execute = async (Y, Z) => {
-    cli.info(`You have chosen ${name}! [With Quantum = ${Z}]`, { clear: true });
+export const execute = async (filePath, Y, Z) => {
+    cli.info(`You have chosen ${name}! ${Y} processes. Q = ${Z}`, { clear: true });
 
     // Get the processes from the user
-    const processes = await getProcesses(Y, true);
-    
+    const { contents: processes } = await readInput(filePath, false);
+
     const results = await rr(processes, Z);
 
     return await display(results);
@@ -33,59 +34,89 @@ export const execute = async (Y, Z) => {
  * @returns {Array<Object>} - Array of Results
  */
 export const rr = async (processes, quantum) => {
-    // Use a queue to track the processes
-    let queue = processes.sort((a, b) => a.arrival - b.arrival).map(p => ({ ...p, remaining: p.burst, history: [], last: 0 }));
+    let results = [], queue = [], history = new Map(), totalWaitTime = 0;
 
-    let currentTime = 0, totalWaitTime = 0, results = [];
+    const length = processes.length;
 
-    // Algorithm Proper
+    // Sort the processes by arrival time
+    processes = processes.sort((a, b) => a.arrival - b.arrival).map((p) => ({ ...p, remaining: p.burst, startTimes: [], endTimes: [] }));
+
+    processes.forEach(p => history.set(p.id, []));
+
+    let currentTime = processes[0].arrival;
+
+    queue.push(processes.shift());
+
     while (queue.length > 0) {
-        let process = queue.shift();
+        const process = queue.shift();
 
-        // Check if the process has arrived
-        if (process.arrival > currentTime) {
-            currentTime = process.arrival;
-        }
+        const startTime = currentTime;
 
-        // Calculate the time slice for the current process
-        const diff = Math.min(process.remaining, quantum);
+        const temp = process.remaining;
 
-        // Track the process history
-        process.history.push({ start: currentTime, end: currentTime + diff });
+        const diff = Math.max(0, process.remaining - quantum);
 
-        // Update current time and remaining burst time
-        currentTime += diff;
-        process.remaining -= diff;
+        process.remaining = diff;
 
-        // Check if the process is not finished and requeue it
+        let final = 0;
+
         if (process.remaining > 0) {
-            queue.push(process);
-            continue;
+            currentTime += quantum;
+            final += quantum;
+        }
+        else {
+            currentTime += temp;
+            final += temp;
         }
 
-        // Calculate total waiting time
-        let waitingTime = process.history.reduce((accumulator, history, index) => {
-            if (index === 0) return accumulator + history.start - process.arrival;
-            return accumulator + history.start - process.history[index - 1].end;
-        }, 0);
+        const currentLength = processes.length;
+        const tempProcesses = [];
 
-        // Update total waiting time
-        totalWaitTime += waitingTime;
+        for (let i = 0; i < currentLength; i++) {
+            const p = processes[i];
 
-        // Print the process details
-        let timesString = process.history.map(t => `start time: ${t.start} end time: ${t.end}`).join(" | ");
-        
-        // Track final process details
-        results.push({ id: process.id, details: `${timesString} | Waiting time: ${waitingTime}` });
+            if (p.arrival <= currentTime) {
+                queue.push(p);
+            }
+            else {
+                tempProcesses.push(p);
+            
+            }
+        }
+
+        processes = tempProcesses;
+
+        if (process.remaining > 0) {
+            process.startTimes.push(startTime);
+            process.endTimes.push(currentTime);
+            queue.push(process);
+            history.get(process.id).push(`start time: ${startTime} end time: ${currentTime}`);
+        }
+        else {
+            process.startTimes.push(startTime);
+            process.endTimes.push(currentTime);
+            
+            let waitingTime = 0;
+
+                for (let i = 0; i < process.startTimes.length; i++) {
+                    if (i == 0) {
+                        waitingTime += process.startTimes[i] - process.arrival;
+                    }
+                    else {
+                        waitingTime += process.startTimes[i] - process.endTimes[i - 1];
+                    }
+                }
+
+            totalWaitTime += waitingTime;
+
+            history.get(process.id).push(`start time: ${startTime} end time: ${currentTime} | Waiting time: ${waitingTime}`);
+        }
     }
 
-    // Calculate average waiting time
-    const averageWaitingTime = totalWaitTime / processes.length;
-    
-    // Sort by id
-    results = results.sort((a, b) => a.id - b.id).map(r => { return `${r.id} ${r.details}` });
-    
-    // Track the average waiting time
+    results = Array.from(history.entries()).map(([id, history]) => `${id} ${history.join(' ')}`);
+
+    const averageWaitingTime = totalWaitTime / length;
+
     results.push(`Average waiting time: ${averageWaitingTime.toFixed(1)}`);
 
     return results;
