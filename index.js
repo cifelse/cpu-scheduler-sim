@@ -47,10 +47,10 @@ const isValid = (response) => {
         valid: false,
         error: 'Y must be an integer between 3 and 100.'
     };
-        
-    if (Z == 3 && !((typeof Z) === 'number') && (Z >= 1) && (Z <= 100)) return {
+
+    if (X == 3 && !(((typeof Z) === 'number') && (Z >= 1) && (Z <= 100))) return {
         valid: false,
-        error: 'Z must be an integer between 1 and 100.'
+        error: `Z must be an integer between 1 and 100. Your input is ${Z}.`
     }
 
     return {
@@ -64,7 +64,7 @@ const isValid = (response) => {
  * Main Function
  */
 (async () => {
-    let valid = true, reset = false, errorMessage = '';
+    let reset = false, errorMessage = '';
 
     do {
         cli.info(`Welcome to the CPU Scheduling Simulator!`, { clear: true });
