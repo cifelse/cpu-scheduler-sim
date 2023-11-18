@@ -18,7 +18,7 @@ export const execute = async (filePath, Y, Z) => {
     cli.info(`You have chosen ${name}! ${Y} processes. Q = ${Z}`, { clear: true });
 
     // Get the processes from the user
-    const processes = await readInput(filePath, false);
+    const { contents: processes } = await readInput(filePath, false);
     
     const results = await sjf(processes);
     
