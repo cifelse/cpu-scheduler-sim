@@ -127,8 +127,13 @@ export const getProcesses = async (filePath) => {
 export const display = async (results) => {
     let reset = false;
 
+    // Get the algorithm name
+    const algo = results.shift();
+
     do {
-        cli.info(`\nResults of the Process:`, { clear: false, color: 'yellow' });
+        cli.info(algo, { clear: true });
+
+        cli.info(`\nResults of the Process:`, { color: 'yellow' });
 
         cli.info(`${results.join('\n')}\n`);
 

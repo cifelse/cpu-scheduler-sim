@@ -2,19 +2,13 @@ import { cli } from "./src/utils/cli.js";
 import { readInput } from "./src/utils/io.js";
 import fs from "fs";
 
-const models = new Map(), table = [
-    { algorithm: 'First Come First Serve', abbreviation: 'FCFS' },
-    { algorithm: 'Shortest Job First', abbreviation: 'SJF' },
-    { algorithm: 'Shortest Remaining Time First', abbreviation: 'SRTF' },
-    { algorithm: 'Round Robin', abbreviation: 'RR' }
-];
+const models = new Map(), table = [];
 
 // Import all the models
 for (const file of fs.readdirSync('./src/models').filter(file => file.endsWith('.js'))) {
     const model = await import(`./src/models/${file}`);
     models.set(file.split('.')[0], model);
-
-    // table.push({ algorithm: model.name, abbreviation: file.split('.')[0].toUpperCase() });
+    table.push({ algorithm: model.name, abbreviation: file.split('.')[0].toUpperCase() });
 }
 
 /**
@@ -34,8 +28,6 @@ const isValid = (response) => {
     
     // Parse the values to integers
     const [X, Y, Z] = arr.map(v => { return parseInt(v) });
-
-    console.log(X, Y, Z);
 
     // Check if the response follows the specs
     if (!((typeof X) === 'number') && (X >= 0) && (X < (table.length))) return {
@@ -104,15 +96,13 @@ const isValid = (response) => {
             // Check if the user's response is valid
             const { valid, error } = isValid(config);
 
-            errorMessage = error;
+            errorMessage = error ?? '';
 
             // If answer is valid, proceed to execute chosen CPU scheduler
             reset = (!valid) ? true : await (async () => {
                 const [X, Y, Z] = config.split(' ').map(v => { return parseInt(v) });
 
-                errorMessage = '';
-
-                return await models.get(table[X].abbreviation.toLowerCase()).execute(filePath, Y, X == 3 ? Z : 1);
+                return await models.get(table[X].abbreviation.toLowerCase()).execute(filePath, Y, (X == 1) ? Z : 1);
             })();
         }
     }

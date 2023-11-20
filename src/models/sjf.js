@@ -15,14 +15,14 @@ export const name = `Shortest Job First`;
  * @returns {Boolean} - True if the user wants to try again
  */
 export const execute = async (filePath, Y, Z) => {
-    cli.info(`You have chosen ${name}! ${Y} processes. Q = ${Z}`, { clear: true });
+    const intro = `You have chosen ${name}! ${Y} processes. Q = ${Z}`;
 
     // Get the processes from the user
     const { contents: processes } = await readInput(filePath, false);
     
     const results = await sjf(processes);
     
-    return await display(results);
+    return await display([intro, ...results]);
 }
 
 /**
